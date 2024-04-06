@@ -1,12 +1,14 @@
 <template>
   <div>
-    {{ selectedIds }}
+    {{ selectedIds.length === 0 ? '[ - ]' : selectedIds }}
     <button @click="rows = [];">empty row</button>
     <button @click="resetTable">reset Table</button>
     <button @click="hideColumn">hide column</button>
     <button @click="setFilter">SetFilter</button>
     <button @click="changePage">Change Page</button>
-    <input type="text" v-model="searchTerm">
+    <input type="text" style="margin-left: 20px;" v-model="searchTerm">
+    <input type="checkbox" id="idKeepSelectedOnSearch" :value="keepSelectedOnSearch" @input="toggleClearSelectedOnChange" />
+    <label for="idKeepSelectedOnSearch">Keep selected on search</label>
     <vue-good-table
       ref="my-table"
       @on-column-filter="onColumnFilter"
@@ -17,12 +19,13 @@
       @on-search="onSearch"
       @on-selected-rows-change="onSelectChanged"
       :columns="columns"
+      :keep-selected-on-search="keepSelectedOnSearch"
       :rows="rows"
       :pagination-options="paginationOptions"
       :select-options="{
         enabled: true,
         selectOnCheckboxOnly: false,
-        disableSelectInfo: true,
+        disableSelectInfo: false,
       }"
       theme="polar-bear"
       styleClass="vgt-table"
@@ -54,6 +57,7 @@ export default {
       selectedIds: [],
       rowStyleClass: 'red',
       searchTerm: '',
+      keepSelectedOnSearch: false,
       paginationOptions: {
         enabled: true,
         mode: 'records',
@@ -368,6 +372,11 @@ export default {
     addFilter() {
       this.$set(this.columns[2], 'filterValue', 'Jane');
       console.log(this.columns);
+    },
+
+    toggleClearSelectedOnChange() {
+      this.keepSelectedOnSearch = !this.keepSelectedOnSearch;
+      console.log(`keep selected on search status: ${this.keepSelectedOnSearch}`);
     },
 
     // events
