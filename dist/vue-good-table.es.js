@@ -5,16 +5,8 @@
  * Released under the MIT License.
  */
 
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var isEqual = require('lodash.isequal');
-var dateFns = require('date-fns');
-
-function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
-
-var isEqual__default = /*#__PURE__*/_interopDefaultLegacy(isEqual);
+import isEqual from 'lodash.isequal';
+import { isValid, compareAsc, parse, format } from 'date-fns';
 
 function _typeof(obj) {
   "@babel/helpers - typeof";
@@ -2025,7 +2017,7 @@ date.isRight = true;
 date.compare = function (x, y, column) {
   function cook(d) {
     if (column && column.dateInputFormat) {
-      return dateFns.parse("".concat(d), "".concat(column.dateInputFormat), new Date());
+      return parse("".concat(d), "".concat(column.dateInputFormat), new Date());
     }
 
     return d;
@@ -2034,24 +2026,24 @@ date.compare = function (x, y, column) {
   x = cook(x);
   y = cook(y);
 
-  if (!dateFns.isValid(x)) {
+  if (!isValid(x)) {
     return -1;
   }
 
-  if (!dateFns.isValid(y)) {
+  if (!isValid(y)) {
     return 1;
   }
 
-  return dateFns.compareAsc(x, y);
+  return compareAsc(x, y);
 };
 
 date.format = function (v, column) {
   if (v === undefined || v === null) return ''; // convert to date
 
-  var date = dateFns.parse(v, column.dateInputFormat, new Date());
+  var date = parse(v, column.dateInputFormat, new Date());
 
-  if (dateFns.isValid(date)) {
-    return dateFns.format(date, column.dateOutputFormat);
+  if (isValid(date)) {
+    return format(date, column.dateOutputFormat);
   }
 
   console.error("Not a valid date: \"".concat(v, "\""));
@@ -2326,7 +2318,7 @@ var script = {
     },
     paginationOptions: {
       handler: function handler(newValue, oldValue) {
-        if (!isEqual__default["default"](newValue, oldValue)) {
+        if (!isEqual(newValue, oldValue)) {
           this.initializePagination();
         }
       },
@@ -2348,14 +2340,14 @@ var script = {
     },
     sortOptions: {
       handler: function handler(newValue, oldValue) {
-        if (!isEqual__default["default"](newValue, oldValue)) {
+        if (!isEqual(newValue, oldValue)) {
           this.initializeSort();
         }
       },
       deep: true
     },
     selectedRows: function selectedRows(newValue, oldValue) {
-      if (!isEqual__default["default"](newValue, oldValue)) {
+      if (!isEqual(newValue, oldValue)) {
         this.$emit("on-selected-rows-change", {
           selectedRows: this.selectedRows
         });
@@ -3868,5 +3860,4 @@ if (typeof window !== 'undefined' && window.Vue) {
   window.Vue.use(VueGoodTablePlugin);
 }
 
-exports.VueGoodTable = __vue_component__;
-exports["default"] = VueGoodTablePlugin;
+export { __vue_component__ as VueGoodTable, VueGoodTablePlugin as default };
