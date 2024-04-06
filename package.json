@@ -8,6 +8,12 @@
   "description": "A simple, clean data table for VueJS (2.x) with essential features like sorting, column filtering, pagination etc",
   "main": "dist/vue-good-table.cjs.js",
   "module": "dist/vue-good-table.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-good-table.es.js",
+      "require": "./dist/vue-good-table.umd.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -32,26 +38,25 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@vueuse/core": "^9.6.0",
     "date-fns": "^2.17.0",
-    "lodash.isequal": "^4.5.0",
-    "@vueuse/core": "^9.6.0"
+    "lodash.isequal": "^4.5.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue2": "2.1.0",
     "@vue/compiler-sfc": "2.7.14",
+    "@vue/runtime-dom": "^3.2.37",
     "@vuepress/plugin-google-analytics": "^1.0.0-rc.1",
     "bili": "^5.0.5",
     "eslint-config-airbnb": "^18.2.0",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-vue": "5.1.9",
+    "sass": "^1.32.11",
     "sass-loader": "13.2.0",
+    "unplugin-auto-import": "^0.12.0",
+    "vite": "^3.0.4",
     "vue": "2.7.14",
     "vue-template-compiler": "^2.7.4",
-    "vuepress": "^1.0.0-rc.1",
-
-    "@vitejs/plugin-vue2": "2.1.0",
-    "@vue/runtime-dom": "^3.2.37",
-    "sass": "^1.32.11",
-    "vite": "^3.0.4",
-    "unplugin-auto-import": "^0.12.0"
+    "vuepress": "^1.0.0-rc.1"
   }
 }
