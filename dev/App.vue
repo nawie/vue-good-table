@@ -168,7 +168,8 @@ export default {
           score: 0.03343,
           bool: true,
           exact: 'match',
-          average: null
+          average: null,
+          vgtSelected: true
         },
         {
           id: 4,
@@ -417,12 +418,11 @@ export default {
     },
 
     onSelectChanged(params) {
-      console.log(params);
       const selectedIds = params.selectedRows.reduce((acc, row) => {
         acc.push(row.id);
         return acc;
       }, []);
-      console.log(params.selectedRows);
+      console.log('on-select-changed');
       console.log(selectedIds);
       this.selectedIds = selectedIds;
     },

@@ -348,7 +348,12 @@ export default {
     rtl: Boolean,
     rowStyleClass: { default: null, type: [Function, String] },
     compactMode: Boolean,
+    // keep selected value even on searching
     keepSelectedOnSearch: { default: true, type: Boolean },
+    // update selected data based on search and columns filter
+    // when set to true it will keep selected value based on available data (will trigger on-selected-rows-change)
+    // else will keep selected value even when available data is changed (will not trigger on-selected-rows-change)
+    updatedSelectedOnSearch: { default: true, type: Boolean },
 
     groupOptions: {
       default() {
@@ -454,6 +459,9 @@ export default {
     searchFn: null,
     searchPlaceholder: "Search Table",
     searchSkipDiacritics: false,
+
+    // 2024-04-06: add rows originalIndex as selected state
+    selectedRowIndex: [],
 
     // internal pagination options
     perPage: null,
@@ -621,7 +629,25 @@ export default {
 
     selectedRows() {
       const selectedRows = [];
-      const rows = this.keepSelectedOnSearch ? this.filteredRows : this.processedRows;
+      let rows = this.keepSelectedOnSearch ? this.filteredRows : this.processedRows;
+
+      // check on column filters (by check length of originalRows vs rows)
+      // if not equal, it mean has column filtering
+      // then get data from original rows and set vgtSelected manually based on selectedRowIndex
+      if (rows[0]?.children.length !== this.originalRows[0]?.children.length) {
+        rows = this.originalRows;
+
+        // re-set selected, disabled because has been called on originalRows
+        // rows.forEach(headerRow => {
+        //   headerRow.children.forEach(row => {
+        //     if (this.selectedRowIndex.includes(row.originalIndex)) {
+        //       this.$set(row, "vgtSelected", true);
+        //     } else {
+        //       this.$set(row, "vgtSelected", false);
+        //     }
+        //   });
+        // });
+      }
 
       rows.forEach(headerRow => {
         headerRow.children.forEach(row => {
@@ -938,6 +964,14 @@ export default {
       nestedRows.forEach(headerRow => {
         headerRow.children.forEach(row => {
           row.originalIndex = index++;
+
+          // if data has been provided with selected rows but doesn't exist on selectRowIndex
+          // add originalIndex to the selectedRowIndex
+          if (row.vgtSelected && !this.selectedRowIndex.includes(row.originalIndex)) {
+            this.selectedRowIndex.push(row.originalIndex);
+          } else if (!row.vgtSelected && this.selectedRowIndex.includes(row.originalIndex)) {
+            row.vgtSelected = true
+          }
         });
       });
 
@@ -1039,6 +1073,7 @@ export default {
           this.$set(row, "vgtSelected", false);
         });
       });
+      this.selectedRowIndex = []
       this.emitSelectedRows();
     },
 
@@ -1140,8 +1175,19 @@ export default {
     },
 
     // checkbox click should always do the following
-    onCheckboxClicked(row, index, event) {
+    async onCheckboxClicked(row, index, event) {
+      const originalIndex = row.originalIndex
+
+      // keep these orders
       this.$set(row, "vgtSelected", !row.vgtSelected);
+
+      // add or remove into selectedRowIndex
+      if (!this.selectedRowIndex.includes(originalIndex) && row?.vgtSelected === true)
+        this.selectedRowIndex.push(originalIndex)
+
+      if (this.selectedRowIndex.includes(originalIndex) && row?.vgtSelected !== true)
+        this.selectedRowIndex = this.selectedRowIndex.filter(selectedIndex => selectedIndex !== originalIndex)
+
       this.$emit("on-row-click", {
         row,
         pageIndex: index,
