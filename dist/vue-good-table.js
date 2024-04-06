@@ -2148,6 +2148,18 @@
     "boolean": _boolean$1
   };
 
+  function _await(value, then, direct) {
+    if (direct) {
+      return then ? then(value) : value;
+    }
+
+    if (!value || !value.then) {
+      value = Promise.resolve(value);
+    }
+
+    return then ? value.then(then) : value;
+  }
+
   var dataTypes = {};
   var coreDataTypes = index;
   Object.keys(coreDataTypes).forEach(function (key) {
@@ -2191,7 +2203,15 @@
         type: [Function, String]
       },
       compactMode: Boolean,
+      // keep selected value even on searching
       keepSelectedOnSearch: {
+        "default": true,
+        type: Boolean
+      },
+      // update selected data based on search and columns filter
+      // when set to true it will keep selected value based on available data (will trigger on-selected-rows-change)
+      // else will keep selected value even when available data is changed (will not trigger on-selected-rows-change)
+      updatedSelectedOnSearch: {
         "default": true,
         type: Boolean
       },
@@ -2287,6 +2307,8 @@
         searchFn: null,
         searchPlaceholder: "Search Table",
         searchSkipDiacritics: false,
+        // 2024-04-06: add rows originalIndex as selected state
+        selectedRowIndex: [],
         // internal pagination options
         perPage: null,
         paginate: false,
@@ -2416,8 +2438,26 @@
         return selectedRows;
       },
       selectedRows: function selectedRows() {
+        var _rows$, _this$originalRows$;
+
         var selectedRows = [];
-        var rows = this.keepSelectedOnSearch ? this.filteredRows : this.processedRows;
+        var rows = this.keepSelectedOnSearch ? this.filteredRows : this.processedRows; // check on column filters (by check length of originalRows vs rows)
+        // if not equal, it mean has column filtering
+        // then get data from original rows and set vgtSelected manually based on selectedRowIndex
+
+        if (((_rows$ = rows[0]) === null || _rows$ === void 0 ? void 0 : _rows$.children.length) !== ((_this$originalRows$ = this.originalRows[0]) === null || _this$originalRows$ === void 0 ? void 0 : _this$originalRows$.children.length)) {
+          rows = this.originalRows; // re-set selected, disabled because has been called on originalRows
+          // rows.forEach(headerRow => {
+          //   headerRow.children.forEach(row => {
+          //     if (this.selectedRowIndex.includes(row.originalIndex)) {
+          //       this.$set(row, "vgtSelected", true);
+          //     } else {
+          //       this.$set(row, "vgtSelected", false);
+          //     }
+          //   });
+          // });
+        }
+
         rows.forEach(function (headerRow) {
           headerRow.children.forEach(function (row) {
             if (row.vgtSelected) {
@@ -2695,6 +2735,8 @@
         return reconstructedRows;
       },
       originalRows: function originalRows() {
+        var _this3 = this;
+
         var rows = this.rows && this.rows.length ? JSON.parse(JSON.stringify(this.rows)) : [];
         var nestedRows = [];
 
@@ -2712,7 +2754,14 @@
         var index = 0;
         nestedRows.forEach(function (headerRow) {
           headerRow.children.forEach(function (row) {
-            row.originalIndex = index++;
+            row.originalIndex = index++; // if data has been provided with selected rows but doesn't exist on selectRowIndex
+            // add originalIndex to the selectedRowIndex
+
+            if (row.vgtSelected && !_this3.selectedRowIndex.includes(row.originalIndex)) {
+              _this3.selectedRowIndex.push(row.originalIndex);
+            } else if (!row.vgtSelected && _this3.selectedRowIndex.includes(row.originalIndex)) {
+              row.vgtSelected = true;
+            }
           });
         });
         return nestedRows;
@@ -2742,10 +2791,10 @@
         }
       },
       toggleExpand: function toggleExpand(id) {
-        var _this3 = this;
+        var _this4 = this;
 
         var headerRow = this.filteredRows.find(function (r) {
-          return r[_this3.rowKeyField] === id;
+          return r[_this4.rowKeyField] === id;
         });
 
         if (headerRow) {
@@ -2759,23 +2808,23 @@
         }
       },
       expandAll: function expandAll() {
-        var _this4 = this;
+        var _this5 = this;
 
         this.filteredRows.forEach(function (row) {
-          _this4.$set(row, "vgtIsExpanded", true);
+          _this5.$set(row, "vgtIsExpanded", true);
 
-          if (_this4.maintainExpanded) {
-            _this4.expandedRowKeys.add(row[_this4.rowKeyField]);
+          if (_this5.maintainExpanded) {
+            _this5.expandedRowKeys.add(row[_this5.rowKeyField]);
           }
         });
       },
       collapseAll: function collapseAll() {
-        var _this5 = this;
+        var _this6 = this;
 
         this.filteredRows.forEach(function (row) {
-          _this5.$set(row, "vgtIsExpanded", false);
+          _this6.$set(row, "vgtIsExpanded", false);
 
-          _this5.expandedRowKeys.clear();
+          _this6.expandedRowKeys.clear();
         });
       },
       getColumnForField: function getColumnForField(field) {
@@ -2808,18 +2857,19 @@
         });
       },
       unselectAllInternal: function unselectAllInternal(forceAll) {
-        var _this6 = this;
+        var _this7 = this;
 
         var rows = this.selectAllByPage && !forceAll ? this.paginated : this.filteredRows;
         rows.forEach(function (headerRow, i) {
           headerRow.children.forEach(function (row, j) {
-            _this6.$set(row, "vgtSelected", false);
+            _this7.$set(row, "vgtSelected", false);
           });
         });
+        this.selectedRowIndex = [];
         this.emitSelectedRows();
       },
       toggleSelectAll: function toggleSelectAll() {
-        var _this7 = this;
+        var _this8 = this;
 
         if (this.allSelected) {
           this.unselectAllInternal();
@@ -2829,16 +2879,16 @@
         var rows = this.selectAllByPage ? this.paginated : this.filteredRows;
         rows.forEach(function (headerRow) {
           headerRow.children.forEach(function (row) {
-            _this7.$set(row, "vgtSelected", true);
+            _this8.$set(row, "vgtSelected", true);
           });
         });
         this.emitSelectedRows();
       },
       toggleSelectGroup: function toggleSelectGroup(event, headerRow) {
-        var _this8 = this;
+        var _this9 = this;
 
         headerRow.children.forEach(function (row) {
-          _this8.$set(row, "vgtSelected", event.checked);
+          _this9.$set(row, "vgtSelected", event.checked);
         });
       },
       changePage: function changePage(value) {
@@ -2919,13 +2969,30 @@
       },
       // checkbox click should always do the following
       onCheckboxClicked: function onCheckboxClicked(row, index, event) {
-        this.$set(row, "vgtSelected", !row.vgtSelected);
-        this.$emit("on-row-click", {
-          row: row,
-          pageIndex: index,
-          selected: !!row.vgtSelected,
-          event: event
-        });
+        try {
+          var _this11 = this;
+
+          var originalIndex = row.originalIndex; // keep these orders
+
+          _this11.$set(row, "vgtSelected", !row.vgtSelected); // add or remove into selectedRowIndex
+
+
+          if (!_this11.selectedRowIndex.includes(originalIndex) && (row === null || row === void 0 ? void 0 : row.vgtSelected) === true) _this11.selectedRowIndex.push(originalIndex);
+          if (_this11.selectedRowIndex.includes(originalIndex) && (row === null || row === void 0 ? void 0 : row.vgtSelected) !== true) _this11.selectedRowIndex = _this11.selectedRowIndex.filter(function (selectedIndex) {
+            return selectedIndex !== originalIndex;
+          });
+
+          _this11.$emit("on-row-click", {
+            row: row,
+            pageIndex: index,
+            selected: !!row.vgtSelected,
+            event: event
+          });
+
+          return _await();
+        } catch (e) {
+          return Promise.reject(e);
+        }
       },
       onRowDoubleClicked: function onRowDoubleClicked(row, index, event) {
         this.$emit("on-row-dblclick", {
@@ -3089,7 +3156,7 @@
       },
       // method to filter rows
       filterRows: function filterRows(columnFilters) {
-        var _this9 = this;
+        var _this12 = this;
 
         var fromFilter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
         // if (!this.rows.length) return;
@@ -3106,26 +3173,26 @@
             // to 1
             // if the mode is remote, we only need to reset, if this is
             // being called from filter, not when rows are changing
-            if (_this9.mode !== "remote" || fromFilter) {
-              _this9.changePage(1);
+            if (_this12.mode !== "remote" || fromFilter) {
+              _this12.changePage(1);
             } // we need to emit an event and that's that.
             // but this only needs to be invoked if filter is changing
             // not when row object is modified.
 
 
             if (fromFilter) {
-              _this9.$emit("on-column-filter", {
-                columnFilters: _this9.columnFilters
+              _this12.$emit("on-column-filter", {
+                columnFilters: _this12.columnFilters
               });
             } // if mode is remote, we don't do any filtering here.
 
 
-            if (_this9.mode === "remote") {
+            if (_this12.mode === "remote") {
               if (fromFilter) {
-                _this9.$emit("update:isLoading", true);
+                _this12.$emit("update:isLoading", true);
               } else {
                 // if remote filtering has already been taken care of.
-                _this9.filteredRows = computedRows;
+                _this12.filteredRows = computedRows;
               }
 
               return {
@@ -3142,20 +3209,20 @@
             };
 
             var _loop = function _loop(i) {
-              var col = _this9.typedColumns[i];
+              var col = _this12.typedColumns[i];
 
-              if (_this9.columnFilters[fieldKey(col.field)]) {
+              if (_this12.columnFilters[fieldKey(col.field)]) {
                 instancesOfFiltering = true;
                 computedRows.forEach(function (headerRow) {
                   var newChildren = headerRow.children.filter(function (row) {
                     // If column has a custom filter, use that.
                     if (col.filterOptions && typeof col.filterOptions.filterFn === "function") {
-                      return col.filterOptions.filterFn(_this9.collect(row, col.field), _this9.columnFilters[fieldKey(col.field)]);
+                      return col.filterOptions.filterFn(_this12.collect(row, col.field), _this12.columnFilters[fieldKey(col.field)]);
                     } // Otherwise Use default filters
 
 
                     var typeDef = col.typeDef;
-                    return typeDef.filterPredicate(_this9.collect(row, col.field), _this9.columnFilters[fieldKey(col.field)], false, col.filterOptions && _typeof(col.filterOptions.filterDropdownItems) === "object");
+                    return typeDef.filterPredicate(_this12.collect(row, col.field), _this12.columnFilters[fieldKey(col.field)], false, col.filterOptions && _typeof(col.filterOptions.filterDropdownItems) === "object");
                   }); // should we remove the header?
 
                   headerRow.children = newChildren;
@@ -3163,7 +3230,7 @@
               }
             };
 
-            for (var i = 0; i < _this9.typedColumns.length; i++) {
+            for (var i = 0; i < _this12.typedColumns.length; i++) {
               _loop(i);
             }
           }();
@@ -3223,13 +3290,13 @@
         return classes;
       },
       handleGrouped: function handleGrouped(originalRows) {
-        var _this10 = this;
+        var _this13 = this;
 
         originalRows.forEach(function (headerRow, i) {
           headerRow.vgt_header_id = i;
 
-          if (_this10.groupOptions.maintainExpanded && _this10.expandedRowKeys.has(headerRow[_this10.groupOptions.rowKey])) {
-            _this10.$set(headerRow, "vgtIsExpanded", true);
+          if (_this13.groupOptions.maintainExpanded && _this13.expandedRowKeys.has(headerRow[_this13.groupOptions.rowKey])) {
+            _this13.$set(headerRow, "vgtIsExpanded", true);
           }
 
           headerRow.children.forEach(function (childRow) {
@@ -3239,7 +3306,7 @@
         return originalRows;
       },
       initializePagination: function initializePagination() {
-        var _this11 = this;
+        var _this14 = this;
 
         var _this$paginationOptio = this.paginationOptions,
             enabled = _this$paginationOptio.enabled,
@@ -3333,7 +3400,7 @@
 
         if (typeof setCurrentPage === "number") {
           setTimeout(function () {
-            _this11.changePage(setCurrentPage);
+            _this14.changePage(setCurrentPage);
           }, 500);
         }
 
