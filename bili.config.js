@@ -14,6 +14,8 @@ module.exports = {
     fileName: (context, defaultFileName) => {
       if (context.format === 'umd' || context.format === 'umd-min') {
         return 'vue-good-table[min].js';
+      } else if (context.format === 'es' || context.format === 'es-min') {
+        return 'vue-good-table[min].esm.js';
       }
       return 'vue-good-table.[format].js';
     },

@@ -29,7 +29,7 @@ const config = defineConfig({
       format: [ 'cjs', 'es', 'umd', 'umd-min' ],
       name: 'VueGoodTable',
       // the proper extensions will be added
-      fileName: 'vue-good-table',
+      fileName: (format) => format === 'es' ? `vue-good-table.esm.js` : `vue-good-table.${format}.js`
     },
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled

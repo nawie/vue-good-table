@@ -10,7 +10,7 @@
   "module": "dist/vue-good-table.esm.js",
   "exports": {
     ".": {
-      "import": "./dist/vue-good-table.es.js",
+      "import": "./dist/vue-good-table.esm.js",
       "require": "./dist/vue-good-table.umd.js"
     }
   },
@@ -48,7 +48,7 @@
     "@vue/runtime-dom": "^3.2.37",
     "@vuepress/plugin-google-analytics": "^1.0.0-rc.1",
     "bili": "^5.0.5",
-    "eslint-config-airbnb": "^18.2.0",
+    "eslint-config-airbnb": "^18.2.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-vue": "5.1.9",
     "sass": "^1.32.11",
