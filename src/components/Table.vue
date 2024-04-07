@@ -325,6 +325,7 @@ import VgtHeaderRow from "./VgtHeaderRow.vue";
 import * as CoreDataTypes from "./types/index";
 
 const dataTypes = {};
+const structuredClone = obj => JSON.parse(JSON.stringify(obj));
 const coreDataTypes = CoreDataTypes.default;
 Object.keys(coreDataTypes).forEach(key => {
   const compName = key.replace(/^\.\//, "").replace(/\.js/, "");
@@ -634,19 +635,10 @@ export default {
       // check on column filters (by check length of originalRows vs rows)
       // if not equal, it mean has column filtering
       // then get data from original rows and set vgtSelected manually based on selectedRowIndex
-      if (rows[0]?.children.length !== this.originalRows[0]?.children.length) {
-        rows = this.originalRows;
+      if (!this.updatedSelectedOnSearch && rows[0]?.children.length !== this.originalRows[0]?.children.length) {
+        rows = this.getOriginalRows(/* discardParentSelectedState */ true);
 
-        // re-set selected, disabled because has been called on originalRows
-        // rows.forEach(headerRow => {
-        //   headerRow.children.forEach(row => {
-        //     if (this.selectedRowIndex.includes(row.originalIndex)) {
-        //       this.$set(row, "vgtSelected", true);
-        //     } else {
-        //       this.$set(row, "vgtSelected", false);
-        //     }
-        //   });
-        // });
+        // remove re set the selected value, because has been called on getOriginalRows
       }
 
       rows.forEach(headerRow => {
@@ -820,7 +812,7 @@ export default {
           const i = headerRow.vgt_header_id;
           const children = filteredRows.filter(r => r.vgt_id === i);
           if (children.length) {
-            const newHeaderRow = JSON.parse(JSON.stringify(headerRow));
+            const newHeaderRow = structuredClone(headerRow);
             newHeaderRow.children = children;
             computedRows.push(newHeaderRow);
           }
@@ -918,7 +910,7 @@ export default {
         //* header row?
         if (flatRow.vgt_header_id !== undefined) {
           this.handleExpanded(flatRow);
-          const newHeaderRow = JSON.parse(JSON.stringify(flatRow));
+          const newHeaderRow = structuredClone(flatRow);
           newHeaderRow.children = [];
           reconstructedRows.push(newHeaderRow);
         } else {
@@ -931,7 +923,7 @@ export default {
               r => r.vgt_header_id === flatRow.vgt_id
             );
             if (hRow) {
-              hRow = JSON.parse(JSON.stringify(hRow));
+              hRow = structuredClone(hRow);
               hRow.children = [];
               reconstructedRows.push(hRow);
             }
@@ -945,7 +937,7 @@ export default {
     originalRows() {
       const rows =
         this.rows && this.rows.length
-          ? JSON.parse(JSON.stringify(this.rows))
+          ? structuredClone(this.rows)
           : [];
       let nestedRows = [];
       if (!this.groupOptions.enabled) {
@@ -965,13 +957,16 @@ export default {
         headerRow.children.forEach(row => {
           row.originalIndex = index++;
 
-          // if data has been provided with selected rows but doesn't exist on selectRowIndex
+          // if source data has been provided with selected rows but doesn't exist on selectRowIndex
           // add originalIndex to the selectedRowIndex
-          if (row.vgtSelected && !this.selectedRowIndex.includes(row.originalIndex)) {
+          if (row.vgtSelected === true && !this.selectedRowIndex.includes(row.originalIndex)) {
             this.selectedRowIndex.push(row.originalIndex);
-          } else if (!row.vgtSelected && this.selectedRowIndex.includes(row.originalIndex)) {
-            row.vgtSelected = true
+            return;
           }
+
+          // else synchronize row selected with selectedRowIndex
+          if (!row?.vgtSelected && this.selectedRowIndex.includes(row.originalIndex))
+            this.$set(row, "vgtSelected", true);
         });
       });
 
@@ -1039,8 +1034,44 @@ export default {
       }
     },
 
+    // get original rows from computed.originalRows
+    getOriginalRows(discardParentSelectedState = false) {
+      if (!discardParentSelectedState)
+        return this.originalRows
+
+      const rows =
+        this.rows && this.rows.length
+          ? structuredClone(this.rows)
+          : [];
+      let nestedRows = [];
+      if (!this.groupOptions.enabled) {
+        nestedRows = this.handleGrouped([
+          {
+            label: "no groups",
+            children: rows
+          }
+        ]);
+      } else {
+        nestedRows = this.handleGrouped(rows);
+      }
+      // we need to preserve the original index of
+      // rows so lets do that
+      let index = 0;
+      nestedRows.forEach(headerRow => {
+        headerRow.children.forEach(row => {
+          row.originalIndex = index++;
+
+          // remove initial selected & set selected only based selectedRowIndex
+          this.$set(row, "vgtSelected", this.selectedRowIndex.includes(row.originalIndex));
+        });
+      });
+
+      return nestedRows;
+    },
+
     handleSearch() {
-      this.resetTable();
+      this.keepSelectedOnSearch === true ? this.changePage(1) : this.resetTable()
+
       // for remote mode, we need to emit on-search
       if (this.mode === "remote") {
         this.$emit("on-search", {
@@ -1086,6 +1117,8 @@ export default {
       rows.forEach(headerRow => {
         headerRow.children.forEach(row => {
           this.$set(row, "vgtSelected", true);
+          // add or remove into selectedRowIndex
+          this.updateSelectedRowIndex(row)
         });
       });
       this.emitSelectedRows();
@@ -1094,6 +1127,8 @@ export default {
     toggleSelectGroup(event, headerRow) {
       headerRow.children.forEach(row => {
         this.$set(row, "vgtSelected", event.checked);
+        // add or remove into selectedRowIndex
+        this.updateSelectedRowIndex(row)
       });
     },
 
@@ -1174,12 +1209,9 @@ export default {
       this.sortChanged = true;
     },
 
-    // checkbox click should always do the following
-    async onCheckboxClicked(row, index, event) {
+    // updated internal selected row index
+    updateSelectedRowIndex(row) {
       const originalIndex = row.originalIndex
-
-      // keep these orders
-      this.$set(row, "vgtSelected", !row.vgtSelected);
 
       // add or remove into selectedRowIndex
       if (!this.selectedRowIndex.includes(originalIndex) && row?.vgtSelected === true)
@@ -1187,6 +1219,15 @@ export default {
 
       if (this.selectedRowIndex.includes(originalIndex) && row?.vgtSelected !== true)
         this.selectedRowIndex = this.selectedRowIndex.filter(selectedIndex => selectedIndex !== originalIndex)
+    },
+
+    // checkbox click should always do the following
+    async onCheckboxClicked(row, index, event) {
+      // keep these orders
+      this.$set(row, "vgtSelected", !row.vgtSelected);
+
+      // add or remove into selectedRowIndex
+      this.updateSelectedRowIndex(row)
 
       this.$emit("on-row-click", {
         row,
@@ -1208,6 +1249,8 @@ export default {
     onRowClicked(row, index, event) {
       if (this.selectable && !this.selectOnCheckboxOnly) {
         this.$set(row, "vgtSelected", !row.vgtSelected);
+        // add or remove into selectedRowIndex
+        this.updateSelectedRowIndex(row)
       }
       this.$emit("on-row-click", {
         row,
@@ -1254,7 +1297,7 @@ export default {
         this.handleSearch();
         // we reset the filteredRows here because
         // we want to search across everything.
-        this.filteredRows = JSON.parse(JSON.stringify(this.originalRows));
+        this.filteredRows = structuredClone(this.originalRows);
         this.forceSearch = true;
         this.sortChanged = true;
       }
@@ -1266,9 +1309,8 @@ export default {
       }
     },
 
-    resetTable() {
-      if (!this.keepSelectedOnSearch)
-        this.unselectAllInternal(true);
+    resetTable(unselectAll = true) {
+      this.unselectAllInternal(unselectAll);
       // every time we searchTable
       this.changePage(1);
     },
@@ -1369,7 +1411,7 @@ export default {
       // this is invoked either as a result of changing filters
       // or as a result of modifying rows.
       this.columnFilters = columnFilters;
-      let computedRows = JSON.parse(JSON.stringify(this.originalRows));
+      let computedRows = this.getOriginalRows(/* discardParentSelectedState */ fromFilter)
       let instancesOfFiltering = false;
 
       // do we have a filter to care about?
@@ -1640,7 +1682,7 @@ export default {
 
     initializeSort() {
       const { enabled, initialSortBy, multipleColumns } = this.sortOptions;
-      const initSortBy = JSON.parse(JSON.stringify(initialSortBy || {}));
+      const initSortBy = structuredClone(initialSortBy || {});
 
       if (typeof enabled === "boolean") {
         this.sortable = enabled;
