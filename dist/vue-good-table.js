@@ -27,10 +27,8 @@
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
-
     return _typeof(obj);
   }
-
   function _defineProperty(obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
@@ -42,41 +40,32 @@
     } else {
       obj[key] = value;
     }
-
     return obj;
   }
-
   function _slicedToArray(arr, i) {
     return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
   }
-
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
   }
-
   function _arrayWithoutHoles(arr) {
     if (Array.isArray(arr)) return _arrayLikeToArray(arr);
   }
-
   function _arrayWithHoles(arr) {
     if (Array.isArray(arr)) return arr;
   }
-
   function _iterableToArray(iter) {
     if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
   }
-
   function _iterableToArrayLimit(arr, i) {
     if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
     var _arr = [];
     var _n = true;
     var _d = false;
     var _e = undefined;
-
     try {
       for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
         _arr.push(_s.value);
-
         if (i && _arr.length === i) break;
       }
     } catch (err) {
@@ -89,10 +78,8 @@
         if (_d) throw _e;
       }
     }
-
     return _arr;
   }
-
   function _unsupportedIterableToArray(o, minLen) {
     if (!o) return;
     if (typeof o === "string") return _arrayLikeToArray(o, minLen);
@@ -101,19 +88,14 @@
     if (n === "Map" || n === "Set") return Array.from(o);
     if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
   }
-
   function _arrayLikeToArray(arr, len) {
     if (len == null || len > arr.length) len = arr.length;
-
     for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
     return arr2;
   }
-
   function _nonIterableSpread() {
     throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
-
   function _nonIterableRest() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
@@ -158,54 +140,50 @@
     x: ["x", "̽", "͓", "ᶍ", "ͯ", "ẋ", "ẍ", "ₓ", "ｘ"],
     y: ["y", "ý", "ÿ", "ŷ", "ȳ", "ɏ", "ʸ", "ẏ", "ỳ", "ỵ", "ỷ", "ỹ", "ｙ"],
     z: ["z", "ź", "ż", "ž", "ƶ", "ȥ", "ɀ", "ʐ", "ʑ", "ᙆ", "ᙇ", "ᶻ", "ᶼ", "ᶽ", "ẑ", "ẓ", "ẕ", "ⱬ", "ｚ"]
-  }; // Precompiled Object with { key = Diacritic, value = real-Character }
+  };
 
+  // Precompiled Object with { key = Diacritic, value = real-Character }
   var compiledDiactitics = function () {
     var x = {};
-
     for (var key in diacritics) {
       var ok = diacritics[key];
-
       for (var rval in ok) {
-        var val = ok[rval]; // Do not replace the char with itself
+        var val = ok[rval];
 
+        // Do not replace the char with itself
         if (val !== key) {
           x[val] = key;
         }
       }
     }
-
     return x;
-  }(); // Regex for detecting non-ASCII-Characters in String
+  }();
 
-
+  // Regex for detecting non-ASCII-Characters in String
   var regexNonASCII = /[^a-z0-9\s,.-]/;
+
   /*
    * Main function of the module which removes all diacritics from the received text
    */
-
   var diacriticless = function diacriticless(text) {
     // When there are only ascii-Characters in the string, skip processing and return text right away
     if (text.search(regexNonASCII) === -1) {
       return text;
     }
-
     var result = "";
     var len = text.length;
-
     for (var i = 0; i < len; i++) {
-      var searchChar = text.charAt(i); // If applicable replace the diacritic character with the real one or use the original value
+      var searchChar = text.charAt(i);
 
+      // If applicable replace the diacritic character with the real one or use the original value
       result += searchChar in compiledDiactitics ? compiledDiactitics[searchChar] : searchChar;
     }
-
     return result;
   };
 
   var escapeRegExp = function escapeRegExp(str) {
     return str.replace(/[\\^$*+?.()|[\]{}]/g, '\\$&');
   };
-
   var defaultType = {
     format: function format(x) {
       return x;
@@ -213,17 +191,18 @@
     filterPredicate: function filterPredicate(rowval, filter) {
       var skipDiacritics = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       var fromDropdown = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
-
       // take care of nulls
       if (typeof rowval === 'undefined' || rowval === null) {
         return false;
-      } // row value
+      }
 
+      // row value
+      var rowValue = skipDiacritics ? String(rowval).toLowerCase() : diacriticless(escapeRegExp(String(rowval)).toLowerCase());
 
-      var rowValue = skipDiacritics ? String(rowval).toLowerCase() : diacriticless(escapeRegExp(String(rowval)).toLowerCase()); // search term
+      // search term
+      var searchTerm = skipDiacritics ? filter.toLowerCase() : diacriticless(escapeRegExp(filter).toLowerCase());
 
-      var searchTerm = skipDiacritics ? filter.toLowerCase() : diacriticless(escapeRegExp(filter).toLowerCase()); // comparison
-
+      // comparison
       return fromDropdown ? rowValue === searchTerm : rowValue.indexOf(searchTerm) > -1;
     },
     compare: function compare(x, y) {
@@ -231,7 +210,6 @@
         if (typeof d === 'undefined' || d === null) return '';
         return diacriticless(String(d).toLowerCase());
       }
-
       x = cook(x);
       y = cook(y);
       if (x < y) return -1;
@@ -286,27 +264,22 @@
         if (this.currentPerPage === -1) {
           return this.totalRecords;
         }
-
         return Math.min(this.totalRecords, this.currentPage * this.currentPerPage);
       },
       recordInfo: function recordInfo() {
         var first = this.firstRecordOnPage;
         var last = this.lastRecordOnPage;
-
         if (last === 0) {
           first = 0;
         }
-
         return "".concat(first, " - ").concat(last, " ").concat(this.ofText, " ").concat(this.totalRecords);
       },
       infoParams: function infoParams() {
         var first = this.firstRecordOnPage;
         var last = this.lastRecordOnPage;
-
         if (last === 0) {
           first = 0;
         }
-
         return {
           firstRecordOnPage: first,
           lastRecordOnPage: last,
@@ -321,14 +294,15 @@
         return "vgt-page-input-".concat(Math.floor(Math.random() * Date.now()));
       },
       changePage: function changePage(event) {
-        var value = parseInt(event.target.value, 10); //! invalid number
+        var value = parseInt(event.target.value, 10);
 
+        //! invalid number
         if (Number.isNaN(value) || value > this.lastPage || value < 1) {
           event.target.value = this.currentPage;
           return false;
-        } //* valid number
+        }
 
-
+        //* valid number
         event.target.value = value;
         this.$emit('page-changed', value);
       }
@@ -415,14 +389,10 @@
   /* script */
   var __vue_script__$6 = script$6;
   /* template */
-
   var __vue_render__$6 = function __vue_render__() {
     var _vm = this;
-
     var _h = _vm.$createElement;
-
     var _c = _vm._self._c || _h;
-
     return _c('div', {
       staticClass: "footer__navigation__page-info"
     }, [_vm.infoFn ? _c('div', [_vm._v("\n    " + _vm._s(_vm.infoFn(_vm.infoParams)) + "\n  ")]) : _vm.mode === 'pages' ? _c('form', {
@@ -452,7 +422,6 @@
           if (!$event.type.indexOf('key') && _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")) {
             return null;
           }
-
           $event.stopPropagation();
           return _vm.changePage.apply(null, arguments);
         }
@@ -466,19 +435,15 @@
       }
     }, [_vm._v("\n      Type a page number and press Enter to change the page.\n    ")])]) : _c('div', [_vm._v("\n    " + _vm._s(_vm.recordInfo) + "\n  ")])]);
   };
-
   var __vue_staticRenderFns__$6 = [];
-  /* style */
 
+  /* style */
   var __vue_inject_styles__$6 = undefined;
   /* scoped */
-
   var __vue_scope_id__$6 = "data-v-347cbcfa";
   /* module identifier */
-
   var __vue_module_identifier__$6 = undefined;
   /* functional template */
-
   var __vue_is_functional_template__$6 = false;
   /* style inject */
 
@@ -586,7 +551,6 @@
         if (this.currentPerPage === -1) {
           return 1;
         }
-
         var quotient = Math.floor(this.total / this.currentPerPage);
         var remainder = this.total % this.currentPerPage;
         return remainder === 0 ? quotient : quotient + 1;
@@ -615,7 +579,6 @@
       // Change current page
       changePage: function changePage(pageNumber) {
         var emit = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
         if (pageNumber > 0 && this.total > this.currentPerPage * (pageNumber - 1)) {
           this.prevPage = this.currentPage;
           this.currentPage = pageNumber;
@@ -673,7 +636,6 @@
             currentPerPage: this.currentPerPage
           });
         }
-
         this.changePage(1, false);
       },
       // Handle per page changing
@@ -685,18 +647,15 @@
           //* otherwise we use the default rows per page dropdown
           this.rowsPerPageOptions = JSON.parse(JSON.stringify(DEFAULT_ROWS_PER_PAGE_DROPDOWN));
         }
-
         if (this.perPage) {
-          this.currentPerPage = this.perPage; // if perPage doesn't already exist, we add it
-
+          this.currentPerPage = this.perPage;
+          // if perPage doesn't already exist, we add it
           var found = false;
-
           for (var i = 0; i < this.rowsPerPageOptions.length; i++) {
             if (this.rowsPerPageOptions[i] === this.perPage) {
               found = true;
             }
           }
-
           if (!found && this.perPage !== -1) {
             this.rowsPerPageOptions.unshift(this.perPage);
           }
@@ -715,14 +674,10 @@
   /* script */
   var __vue_script__$5 = script$5;
   /* template */
-
   var __vue_render__$5 = function __vue_render__() {
     var _vm = this;
-
     var _h = _vm.$createElement;
-
     var _c = _vm._self._c || _h;
-
     return _c('div', {
       staticClass: "vgt-wrap__footer vgt-clearfix"
     }, [_vm.perPageDropdownEnabled ? _c('div', {
@@ -886,19 +841,15 @@
       }
     })]) : _vm._e()], 1)]);
   };
-
   var __vue_staticRenderFns__$5 = [];
-  /* style */
 
+  /* style */
   var __vue_inject_styles__$5 = undefined;
   /* scoped */
-
   var __vue_scope_id__$5 = undefined;
   /* module identifier */
-
   var __vue_module_identifier__$5 = undefined;
   /* functional template */
-
   var __vue_is_functional_template__$5 = false;
   /* style inject */
 
@@ -939,6 +890,7 @@
   //
   //
   //
+
   var script$4 = {
     name: 'VgtGlobalSearch',
     props: ['value', 'searchEnabled', 'globalSearchPlaceholder'],
@@ -972,14 +924,10 @@
   /* script */
   var __vue_script__$4 = script$4;
   /* template */
-
   var __vue_render__$4 = function __vue_render__() {
     var _vm = this;
-
     var _h = _vm.$createElement;
-
     var _c = _vm._self._c || _h;
-
     return _vm.showControlBar ? _c('div', {
       staticClass: "vgt-global-search vgt-clearfix"
     }, [_c('div', {
@@ -1017,7 +965,6 @@
           if (!$event.type.indexOf('key') && _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")) {
             return null;
           }
-
           return _vm.entered($event.target.value);
         }
       }
@@ -1025,14 +972,10 @@
       staticClass: "vgt-global-search__actions vgt-pull-right"
     }, [_vm._t("internal-table-actions")], 2)]) : _vm._e();
   };
-
   var __vue_staticRenderFns__$4 = [function () {
     var _vm = this;
-
     var _h = _vm.$createElement;
-
     var _c = _vm._self._c || _h;
-
     return _c('span', {
       staticClass: "input__icon",
       attrs: {
@@ -1042,17 +985,14 @@
       staticClass: "magnifying-glass"
     })]);
   }];
-  /* style */
 
+  /* style */
   var __vue_inject_styles__$4 = undefined;
   /* scoped */
-
   var __vue_scope_id__$4 = undefined;
   /* module identifier */
-
   var __vue_module_identifier__$4 = undefined;
   /* functional template */
-
   var __vue_is_functional_template__$4 = false;
   /* style inject */
 
@@ -1126,6 +1066,7 @@
   //
   //
   //
+
   var script$3 = {
     name: 'VgtFilterRow',
     props: ['lineNumbers', 'columns', 'typedColumns', 'globalSearchEnabled', 'selectable', 'mode'],
@@ -1152,13 +1093,11 @@
         // if (this.mode === 'remote' || !this.globalSearchEnabled) {
         for (var i = 0; i < this.columns.length; i++) {
           var col = this.columns[i];
-
           if (col.filterOptions && col.filterOptions.enabled) {
             return true;
           }
-        } // }
-
-
+        }
+        // }
         return false;
       }
     },
@@ -1167,13 +1106,11 @@
         if (typeof field === 'function' && field.name) {
           return field.name;
         }
-
         return field;
       },
       reset: function reset() {
         var emitEvent = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
         this.columnFilters = {};
-
         if (emitEvent) {
           this.$emit('filter-changed', this.columnFilters);
         }
@@ -1213,18 +1150,15 @@
       },
       updateSlotFilter: function updateSlotFilter(column, value) {
         var fieldToFilter = column.filterOptions.slotFilterField || column.field;
-
         if (typeof column.filterOptions.formatValue === 'function') {
           value = column.filterOptions.formatValue(value);
         }
-
         this.updateFiltersImmediately(fieldToFilter, value);
       },
       // since vue doesn't detect property addition and deletion, we
       // need to create helper function to set property etc
       updateFilters: function updateFilters(column, value) {
         var _this = this;
-
         if (this.timer) clearTimeout(this.timer);
         this.timer = setTimeout(function () {
           _this.updateFiltersImmediately(column.field, value);
@@ -1236,16 +1170,16 @@
       },
       populateInitialFilters: function populateInitialFilters() {
         for (var i = 0; i < this.columns.length; i++) {
-          var col = this.columns[i]; // lets see if there are initial
+          var col = this.columns[i];
+          // lets see if there are initial
           // filters supplied by user
-
           if (this.isFilterable(col) && typeof col.filterOptions.filterValue !== 'undefined' && col.filterOptions.filterValue !== null) {
-            this.$set(this.columnFilters, this.fieldKey(col.field), col.filterOptions.filterValue); // this.updateFilters(col, col.filterOptions.filterValue);
+            this.$set(this.columnFilters, this.fieldKey(col.field), col.filterOptions.filterValue);
+            // this.updateFilters(col, col.filterOptions.filterValue);
             // this.$set(col.filterOptions, 'filterValue', undefined);
           }
-        } //* lets emit event once all filters are set
-
-
+        }
+        //* lets emit event once all filters are set
         this.$emit('filter-changed', this.columnFilters);
       }
     }
@@ -1254,14 +1188,10 @@
   /* script */
   var __vue_script__$3 = script$3;
   /* template */
-
   var __vue_render__$3 = function __vue_render__() {
     var _vm = this;
-
     var _h = _vm.$createElement;
-
     var _c = _vm._self._c || _h;
-
     return _vm.hasFilterRow ? _c('tr', [_vm.lineNumbers ? _c('th') : _vm._e(), _vm._v(" "), _vm.selectable ? _c('th') : _vm._e(), _vm._v(" "), _vm._l(_vm.columns, function (column, index) {
       return !column.hidden ? _c('th', {
         key: index,
@@ -1282,7 +1212,6 @@
               if (!$event.type.indexOf('key') && _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")) {
                 return null;
               }
-
               return _vm.updateFiltersOnEnter(column, $event.target.value);
             },
             "input": function input($event) {
@@ -1346,19 +1275,15 @@
       })], 2) : _vm._e();
     })], 2) : _vm._e();
   };
-
   var __vue_staticRenderFns__$3 = [];
-  /* style */
 
+  /* style */
   var __vue_inject_styles__$3 = undefined;
   /* scoped */
-
   var __vue_scope_id__$3 = "data-v-6869bf1c";
   /* module identifier */
-
   var __vue_module_identifier__$3 = undefined;
   /* functional template */
-
   var __vue_is_functional_template__$3 = false;
   /* style inject */
 
@@ -1374,39 +1299,32 @@
   function getColumnFirstSortType(column) {
     return column.firstSortType || DEFAULT_SORT_TYPE;
   }
-
   function getCurrentPrimarySort(sortArray, column) {
     return sortArray.length === 1 && sortArray[0].field === column.field ? sortArray[0].type : undefined;
   }
-
   function getNextSort(currentSort, column) {
     if (SORT_TYPES.Descending === getColumnFirstSortType(column) && currentSort === SORT_TYPES.Ascending) {
       return SORT_TYPES.None;
     } else if (currentSort === SORT_TYPES.Ascending) {
       return SORT_TYPES.Descending;
     }
-
     if (SORT_TYPES.Descending === getColumnFirstSortType(column) && currentSort === SORT_TYPES.Descending) {
       return SORT_TYPES.Ascending;
     } else if (currentSort === SORT_TYPES.Descending) {
       return SORT_TYPES.None;
     }
-
     if (SORT_TYPES.Descending === getColumnFirstSortType(column) && currentSort === SORT_TYPES.None) {
       return SORT_TYPES.Descending;
     } else {
       return SORT_TYPES.Ascending;
     }
   }
-
   function getIndex(sortArray, column) {
     for (var i = 0; i < sortArray.length; i++) {
       if (column.field === sortArray[i].field) return i;
     }
-
     return -1;
   }
-
   var primarySort = function primarySort(sortArray, column) {
     var currentPrimarySort = getCurrentPrimarySort(sortArray, column);
     var nextPrimarySort = getNextSort(currentPrimarySort, column);
@@ -1415,10 +1333,8 @@
       type: currentPrimarySort ? nextPrimarySort : getColumnFirstSortType(column)
     }];
   };
-
   var secondarySort = function secondarySort(sortArray, column) {
     var index = getIndex(sortArray, column);
-
     if (index === -1) {
       sortArray.push({
         field: column.field,
@@ -1427,7 +1343,6 @@
     } else {
       sortArray[index].type = getNextSort(sortArray[index].type, column);
     }
-
     return sortArray;
   };
 
@@ -1523,13 +1438,11 @@
       sort: function sort(e, column) {
         //* if column is not sortable, return right here
         if (!this.isSortableColumn(column)) return;
-
         if (e.shiftKey && this.multipleColumnSort) {
           this.sorts = secondarySort(this.sorts, column);
         } else {
           this.sorts = primarySort(this.sorts, column);
         }
-
         this.$emit('on-sort-change', this.sorts);
       },
       setInitialSort: function setInitialSort(sorts) {
@@ -1542,7 +1455,6 @@
             return this.sorts[i].type || 'asc';
           }
         }
-
         return null;
       },
       getColumnSortLong: function getColumnSortLong(column) {
@@ -1566,14 +1478,12 @@
             width: cellStyle.width
           };
         }
-
         return {
           width: 'auto'
         };
       },
       setColumnStyles: function setColumnStyles() {
         var colStyles = [];
-
         for (var i = 0; i < this.columns.length; i++) {
           if (this.tableRef) {
             var skip = 0;
@@ -1589,7 +1499,6 @@
             });
           }
         }
-
         this.columnStyles = colStyles;
       },
       getColumnStyle: function getColumnStyle(column, index) {
@@ -1597,8 +1506,8 @@
           minWidth: column.width ? column.width : 'auto',
           maxWidth: column.width ? column.width : 'auto',
           width: column.width ? column.width : 'auto'
-        }; //* if fixed header we need to get width from original table
-
+        };
+        //* if fixed header we need to get width from original table
         if (this.tableRef) {
           if (this.selectable) index++;
           if (this.lineNumbers) index++;
@@ -1606,25 +1515,22 @@
           var cellStyle = window.getComputedStyle(cell, null);
           styleObject.width = cellStyle.width;
         }
-
         return styleObject;
       }
     },
     mounted: function mounted() {
       var _this = this;
-
       this.$nextTick(function () {
         // We're going to watch the parent element for resize events, and calculate column widths if it changes
         if ('ResizeObserver' in window) {
           _this.ro = new ResizeObserver(function () {
             _this.setColumnStyles();
           });
+          _this.ro.observe(_this.$parent.$el);
 
-          _this.ro.observe(_this.$parent.$el); // If this is a fixed-header table, we want to observe each column header from the non-fixed header.
+          // If this is a fixed-header table, we want to observe each column header from the non-fixed header.
           // You can imagine two columns swapping widths, which wouldn't cause the above to trigger.
           // This gets the first tr element of the primary table header, and iterates through its children (the th elements)
-
-
           if (_this.tableRef) {
             Array.from(_this.$parent.$refs['table-header-primary'].$el.children[0].children).forEach(function (header) {
               _this.ro.observe(header);
@@ -1645,15 +1551,12 @@
 
   /* script */
   var __vue_script__$2 = script$2;
-  /* template */
 
+  /* template */
   var __vue_render__$2 = function __vue_render__() {
     var _vm = this;
-
     var _h = _vm.$createElement;
-
     var _c = _vm._self._c || _h;
-
     return _c('thead', [_c('tr', [_vm.lineNumbers ? _c('th', {
       staticClass: "line-numbers",
       attrs: {
@@ -1724,19 +1627,15 @@
       }], null, true)
     })], 1);
   };
-
   var __vue_staticRenderFns__$2 = [];
-  /* style */
 
+  /* style */
   var __vue_inject_styles__$2 = undefined;
   /* scoped */
-
   var __vue_scope_id__$2 = undefined;
   /* module identifier */
-
   var __vue_module_identifier__$2 = undefined;
   /* functional template */
-
   var __vue_is_functional_template__$2 = false;
   /* style inject */
 
@@ -1823,6 +1722,7 @@
   //
   //
   //
+
   var script$1 = {
     name: 'VgtHeaderRow',
     props: {
@@ -1867,7 +1767,7 @@
     computed: {
       allSelected: function allSelected() {
         var headerRow = this.headerRow;
-            this.groupChildObject;
+          this.groupChildObject;
         return headerRow.children.filter(function (row) {
           return row.vgtSelected;
         }).length === headerRow.children.length;
@@ -1878,7 +1778,6 @@
         if (this.collapsable === true) {
           return currentIndex === 0;
         }
-
         return currentIndex === this.collapsable;
       },
       toggleSelectGroup: function toggleSelectGroup(event) {
@@ -1895,14 +1794,10 @@
   /* script */
   var __vue_script__$1 = script$1;
   /* template */
-
   var __vue_render__$1 = function __vue_render__() {
     var _vm = this;
-
     var _h = _vm.$createElement;
-
     var _c = _vm._self._c || _h;
-
     return _c('tr', [_vm.headerRow.mode === 'span' ? _c('th', {
       staticClass: "vgt-left-align vgt-row-header",
       attrs: {
@@ -1993,19 +1888,15 @@
       })], 2) : _vm._e();
     })], 2);
   };
-
   var __vue_staticRenderFns__$1 = [];
-  /* style */
 
+  /* style */
   var __vue_inject_styles__$1 = undefined;
   /* scoped */
-
   var __vue_scope_id__$1 = undefined;
   /* module identifier */
-
   var __vue_module_identifier__$1 = undefined;
   /* functional template */
-
   var __vue_is_functional_template__$1 = false;
   /* style inject */
 
@@ -2020,39 +1911,30 @@
 
   var date = Object.assign({}, defaultType);
   date.isRight = true;
-
   date.compare = function (x, y, column) {
     function cook(d) {
       if (column && column.dateInputFormat) {
         return dateFns.parse("".concat(d), "".concat(column.dateInputFormat), new Date());
       }
-
       return d;
     }
-
     x = cook(x);
     y = cook(y);
-
     if (!dateFns.isValid(x)) {
       return -1;
     }
-
     if (!dateFns.isValid(y)) {
       return 1;
     }
-
     return dateFns.compareAsc(x, y);
   };
-
   date.format = function (v, column) {
-    if (v === undefined || v === null) return ''; // convert to date
-
+    if (v === undefined || v === null) return '';
+    // convert to date
     var date = dateFns.parse(v, column.dateInputFormat, new Date());
-
     if (dateFns.isValid(date)) {
       return dateFns.format(date, column.dateOutputFormat);
     }
-
     console.error("Not a valid date: \"".concat(v, "\""));
     return null;
   };
@@ -2064,11 +1946,9 @@
 
   var number = Object.assign({}, defaultType);
   number.isRight = true;
-
   number.filterPredicate = function (rowval, filter) {
     return number.compare(rowval, filter) === 0;
   };
-
   number.compare = function (x, y) {
     function cook(d) {
       // if d is null or undefined we give it the smallest
@@ -2076,7 +1956,6 @@
       if (d === undefined || d === null) return -Infinity;
       return d.indexOf('.') >= 0 ? parseFloat(d) : parseInt(d, 10);
     }
-
     x = typeof x === 'number' ? x : cook(x);
     y = typeof y === 'number' ? y : cook(y);
     if (x < y) return -1;
@@ -2090,7 +1969,6 @@
   });
 
   var decimal = Object.assign({}, number);
-
   decimal.format = function (v) {
     if (v === undefined || v === null) return '';
     return parseFloat(Math.round(v * 100) / 100).toFixed(2);
@@ -2102,7 +1980,6 @@
   });
 
   var percentage = Object.assign({}, number);
-
   percentage.format = function (v) {
     if (v === undefined || v === null) return '';
     return "".concat(parseFloat(v * 100).toFixed(2), "%");
@@ -2114,20 +1991,16 @@
   });
 
   var _boolean = Object.assign({}, defaultType);
-
   _boolean.isRight = true;
-
   _boolean.filterPredicate = function (rowval, filter) {
     return _boolean.compare(rowval, filter) === 0;
   };
-
   _boolean.compare = function (x, y) {
     function cook(d) {
       if (typeof d === 'boolean') return d ? 1 : 0;
       if (typeof d === 'string') return d === 'true' ? 1 : 0;
       return -Infinity;
     }
-
     x = cook(x);
     y = cook(y);
     if (x < y) return -1;
@@ -2152,15 +2025,15 @@
     if (direct) {
       return then ? then(value) : value;
     }
-
     if (!value || !value.then) {
       value = Promise.resolve(value);
     }
-
     return then ? value.then(then) : value;
   }
-
   var dataTypes = {};
+  var structuredClone = function structuredClone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  };
   var coreDataTypes = index;
   Object.keys(coreDataTypes).forEach(function (key) {
     var compName = key.replace(/^\.\//, "").replace(/\.js/, "");
@@ -2250,7 +2123,6 @@
       paginationOptions: {
         "default": function _default() {
           var _ref;
-
           return _ref = {
             enabled: false,
             position: "bottom",
@@ -2361,7 +2233,6 @@
             this.externalSearchQuery = this.searchOptions.externalQuery;
             this.handleSearch();
           }
-
           this.initializeSearch();
         },
         deep: true,
@@ -2404,11 +2275,9 @@
       },
       showEmptySlot: function showEmptySlot() {
         if (!this.paginated.length) return true;
-
         if (this.paginated[0].label === "no groups" && !this.paginated[0].children.length) {
           return true;
         }
-
         return false;
       },
       allSelected: function allSelected() {
@@ -2439,25 +2308,17 @@
       },
       selectedRows: function selectedRows() {
         var _rows$, _this$originalRows$;
-
         var selectedRows = [];
-        var rows = this.keepSelectedOnSearch ? this.filteredRows : this.processedRows; // check on column filters (by check length of originalRows vs rows)
+        var rows = this.keepSelectedOnSearch ? this.filteredRows : this.processedRows;
+
+        // check on column filters (by check length of originalRows vs rows)
         // if not equal, it mean has column filtering
         // then get data from original rows and set vgtSelected manually based on selectedRowIndex
+        if (!this.updatedSelectedOnSearch && ((_rows$ = rows[0]) === null || _rows$ === void 0 ? void 0 : _rows$.children.length) !== ((_this$originalRows$ = this.originalRows[0]) === null || _this$originalRows$ === void 0 ? void 0 : _this$originalRows$.children.length)) {
+          rows = this.getOriginalRows( /* discardParentSelectedState */true);
 
-        if (((_rows$ = rows[0]) === null || _rows$ === void 0 ? void 0 : _rows$.children.length) !== ((_this$originalRows$ = this.originalRows[0]) === null || _this$originalRows$ === void 0 ? void 0 : _this$originalRows$.children.length)) {
-          rows = this.originalRows; // re-set selected, disabled because has been called on originalRows
-          // rows.forEach(headerRow => {
-          //   headerRow.children.forEach(row => {
-          //     if (this.selectedRowIndex.includes(row.originalIndex)) {
-          //       this.$set(row, "vgtSelected", true);
-          //     } else {
-          //       this.$set(row, "vgtSelected", false);
-          //     }
-          //   });
-          // });
+          // remove re set the selected value, because has been called on getOriginalRows
         }
-
         rows.forEach(function (headerRow) {
           headerRow.children.forEach(function (row) {
             if (row.vgtSelected) {
@@ -2471,13 +2332,11 @@
       },
       fullColspan: function fullColspan() {
         var fullColspan = 0;
-
         for (var i = 0; i < this.columns.length; i += 1) {
           if (!this.columns[i].hidden) {
             fullColspan += 1;
           }
         }
-
         if (this.lineNumbers) fullColspan++;
         if (this.selectable) fullColspan++;
         return fullColspan;
@@ -2486,16 +2345,15 @@
         if (this.groupOptions && this.groupOptions.enabled && this.groupOptions.headerPosition && this.groupOptions.headerPosition === "bottom") {
           return false;
         }
+        if (this.groupOptions && this.groupOptions.enabled) return true;
 
-        if (this.groupOptions && this.groupOptions.enabled) return true; // will only get here if groupOptions is false
-
+        // will only get here if groupOptions is false
         return false;
       },
       groupHeaderOnBottom: function groupHeaderOnBottom() {
         if (this.groupOptions && this.groupOptions.enabled && this.groupOptions.headerPosition && this.groupOptions.headerPosition === "bottom") {
           return true;
         }
-
         return false;
       },
       totalRowCount: function totalRowCount() {
@@ -2531,16 +2389,13 @@
         if (this.searchEnabled && !!this.globalSearchTerm && this.searchTrigger !== "enter") {
           return true;
         }
-
         if (this.externalSearchQuery != null && this.searchTrigger !== "enter") {
           return true;
         }
-
         if (this.forceSearch) {
           this.forceSearch = false;
           return true;
         }
-
         return false;
       },
       // this is done everytime sortColumn
@@ -2548,15 +2403,13 @@
       //----------------------------------------
       processedRows: function processedRows() {
         var _this = this;
-
         // we only process rows when mode is local
         var computedRows = this.filteredRows;
-
         if (this.mode === "remote") {
           return computedRows;
-        } // take care of the global filter here also
+        }
 
-
+        // take care of the global filter here also
         if (this.globalSearchAllowed) {
           // here also we need to de-construct and then
           // re-construct the rows.
@@ -2567,15 +2420,14 @@
           var filteredRows = [];
           allRows.forEach(function (row) {
             for (var i = 0; i < _this.columns.length; i += 1) {
-              var col = _this.columns[i]; // if col does not have search disabled,
-
+              var col = _this.columns[i];
+              // if col does not have search disabled,
               if (!col.globalSearchDisabled) {
                 // if a search function is provided,
                 // use that for searching, otherwise,
                 // use the default search behavior
                 if (_this.searchFn) {
                   var foundMatch = _this.searchFn(row, col, _this.collectFormatted(row, col), _this.searchTerm);
-
                   if (foundMatch) {
                     filteredRows.push(row);
                     break; // break the loop
@@ -2583,7 +2435,6 @@
                 } else {
                   // comparison
                   var matched = defaultType.filterPredicate(_this.collectFormatted(row, col), _this.searchTerm, _this.searchSkipDiacritics);
-
                   if (matched) {
                     filteredRows.push(row);
                     break; // break loop
@@ -2591,52 +2442,47 @@
                 }
               }
             }
-          }); // this is where we emit on search
+          });
 
+          // this is where we emit on search
           this.$emit("on-search", {
             searchTerm: this.searchTerm,
             rowCount: filteredRows.length
-          }); // here we need to reconstruct the nested structure
-          // of rows
+          });
 
+          // here we need to reconstruct the nested structure
+          // of rows
           computedRows = [];
           this.filteredRows.forEach(function (headerRow) {
             var i = headerRow.vgt_header_id;
             var children = filteredRows.filter(function (r) {
               return r.vgt_id === i;
             });
-
             if (children.length) {
-              var newHeaderRow = JSON.parse(JSON.stringify(headerRow));
+              var newHeaderRow = structuredClone(headerRow);
               newHeaderRow.children = children;
               computedRows.push(newHeaderRow);
             }
           });
         }
-
         if (this.sorts.length) {
           //* we need to sort
           computedRows.forEach(function (cRows) {
             cRows.children.sort(function (xRow, yRow) {
               //* we need to get column for each sort
               var sortValue;
-
               for (var i = 0; i < _this.sorts.length; i += 1) {
                 var srt = _this.sorts[i];
-
                 if (srt.type === SORT_TYPES.None) {
                   //* if no sort, we need to use the original index to sort.
                   sortValue = sortValue || xRow.originalIndex - yRow.originalIndex;
                 } else {
                   var column = _this.getColumnForField(srt.field);
-
                   var xvalue = _this.collect(xRow, srt.field);
+                  var yvalue = _this.collect(yRow, srt.field);
 
-                  var yvalue = _this.collect(yRow, srt.field); //* if a custom sort function has been provided we use that
-
-
+                  //* if a custom sort function has been provided we use that
                   var sortFn = column.sortFn;
-
                   if (sortFn && typeof sortFn === "function") {
                     sortValue = sortValue || sortFn(xvalue, yvalue, column, xRow, yRow) * (srt.type === SORT_TYPES.Descending ? -1 : 1);
                   } else {
@@ -2645,70 +2491,62 @@
                   }
                 }
               }
-
               return sortValue;
             });
           });
-        } // if the filtering is event based, we need to maintain filter
+        }
+
+        // if the filtering is event based, we need to maintain filter
         // rows
-
-
         if (this.searchTrigger === "enter") {
           this.filteredRows = computedRows;
         }
-
         return computedRows;
       },
       paginated: function paginated() {
         var _this2 = this;
-
         if (!this.processedRows.length) return [];
-
         if (this.mode === "remote") {
           return this.processedRows;
-        } //* flatten the rows for paging.
+        }
 
-
+        //* flatten the rows for paging.
         var paginatedRows = [];
         this.processedRows.forEach(function (childRows) {
           var _paginatedRows;
-
           //* only add headers when group options are enabled.
           if (_this2.groupOptions.enabled) {
             paginatedRows.push(childRows);
           }
-
           (_paginatedRows = paginatedRows).push.apply(_paginatedRows, _toConsumableArray(childRows.children));
         });
-
         if (this.paginate) {
-          var pageStart = (this.currentPage - 1) * this.currentPerPage; // in case of filtering we might be on a page that is
+          var pageStart = (this.currentPage - 1) * this.currentPerPage;
+
+          // in case of filtering we might be on a page that is
           // not relevant anymore
           // also, if setting to all, current page will not be valid
-
           if (pageStart >= paginatedRows.length || this.currentPerPage === -1) {
             this.currentPage = 1;
             pageStart = 0;
-          } // calculate page end now
+          }
 
+          // calculate page end now
+          var pageEnd = paginatedRows.length + 1;
 
-          var pageEnd = paginatedRows.length + 1; // if the setting is not set to 'all'
-
+          // if the setting is not set to 'all'
           if (this.currentPerPage !== -1) {
             pageEnd = this.currentPage * this.currentPerPage;
           }
-
           paginatedRows = paginatedRows.slice(pageStart, pageEnd);
-        } // reconstruct paginated rows here
-
-
+        }
+        // reconstruct paginated rows here
         var reconstructedRows = [];
         paginatedRows.forEach(function (flatRow) {
           //* header row?
           if (flatRow.vgt_header_id !== undefined) {
             _this2.handleExpanded(flatRow);
-
-            var newHeaderRow = JSON.parse(JSON.stringify(flatRow));
+            var newHeaderRow = structuredClone(flatRow);
             newHeaderRow.children = [];
             reconstructedRows.push(newHeaderRow);
           } else {
@@ -2716,19 +2554,16 @@
             var hRow = reconstructedRows.find(function (r) {
               return r.vgt_header_id === flatRow.vgt_id;
             });
-
             if (!hRow) {
               hRow = _this2.processedRows.find(function (r) {
                 return r.vgt_header_id === flatRow.vgt_id;
               });
-
               if (hRow) {
-                hRow = JSON.parse(JSON.stringify(hRow));
+                hRow = structuredClone(hRow);
                 hRow.children = [];
                 reconstructedRows.push(hRow);
               }
             }
-
             hRow.children.push(flatRow);
           }
         });
@@ -2736,10 +2571,8 @@
       },
       originalRows: function originalRows() {
         var _this3 = this;
-
-        var rows = this.rows && this.rows.length ? JSON.parse(JSON.stringify(this.rows)) : [];
+        var rows = this.rows && this.rows.length ? structuredClone(this.rows) : [];
         var nestedRows = [];
-
         if (!this.groupOptions.enabled) {
           nestedRows = this.handleGrouped([{
             label: "no groups",
@@ -2747,33 +2580,33 @@
           }]);
         } else {
           nestedRows = this.handleGrouped(rows);
-        } // we need to preserve the original index of
+        }
+        // we need to preserve the original index of
         // rows so lets do that
-
-
         var index = 0;
         nestedRows.forEach(function (headerRow) {
           headerRow.children.forEach(function (row) {
-            row.originalIndex = index++; // if data has been provided with selected rows but doesn't exist on selectRowIndex
-            // add originalIndex to the selectedRowIndex
+            row.originalIndex = index++;
 
-            if (row.vgtSelected && !_this3.selectedRowIndex.includes(row.originalIndex)) {
+            // if source data has been provided with selected rows but doesn't exist on selectRowIndex
+            // add originalIndex to the selectedRowIndex
+            if (row.vgtSelected === true && !_this3.selectedRowIndex.includes(row.originalIndex)) {
               _this3.selectedRowIndex.push(row.originalIndex);
-            } else if (!row.vgtSelected && _this3.selectedRowIndex.includes(row.originalIndex)) {
-              row.vgtSelected = true;
+              return;
             }
+
+            // else synchronize row selected with selectedRowIndex
+            if (!(row !== null && row !== void 0 && row.vgtSelected) && _this3.selectedRowIndex.includes(row.originalIndex)) _this3.$set(row, "vgtSelected", true);
           });
         });
         return nestedRows;
       },
       typedColumns: function typedColumns() {
         var columns = this.columns;
-
         for (var i = 0; i < this.columns.length; i++) {
           var column = columns[i];
           column.typeDef = this.dataTypes[column.type] || defaultType;
         }
-
         return columns;
       },
       hasRowClickListener: function hasRowClickListener() {
@@ -2792,15 +2625,12 @@
       },
       toggleExpand: function toggleExpand(id) {
         var _this4 = this;
-
         var headerRow = this.filteredRows.find(function (r) {
           return r[_this4.rowKeyField] === id;
         });
-
         if (headerRow) {
           this.$set(headerRow, "vgtIsExpanded", !headerRow.vgtIsExpanded);
         }
-
         if (this.maintainExpanded && headerRow.vgtIsExpanded) {
           this.expandedRowKeys.add(headerRow[this.rowKeyField]);
         } else {
@@ -2809,10 +2639,8 @@
       },
       expandAll: function expandAll() {
         var _this5 = this;
-
         this.filteredRows.forEach(function (row) {
           _this5.$set(row, "vgtIsExpanded", true);
-
           if (_this5.maintainExpanded) {
             _this5.expandedRowKeys.add(row[_this5.rowKeyField]);
           }
@@ -2820,10 +2648,8 @@
       },
       collapseAll: function collapseAll() {
         var _this6 = this;
-
         this.filteredRows.forEach(function (row) {
           _this6.$set(row, "vgtIsExpanded", false);
-
           _this6.expandedRowKeys.clear();
         });
       },
@@ -2832,9 +2658,38 @@
           if (this.typedColumns[i].field === field) return this.typedColumns[i];
         }
       },
-      handleSearch: function handleSearch() {
-        this.resetTable(); // for remote mode, we need to emit on-search
+      // get original rows from computed.originalRows
+      getOriginalRows: function getOriginalRows() {
+        var _this7 = this;
+        var discardParentSelectedState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+        if (!discardParentSelectedState) return this.originalRows;
+        var rows = this.rows && this.rows.length ? structuredClone(this.rows) : [];
+        var nestedRows = [];
+        if (!this.groupOptions.enabled) {
+          nestedRows = this.handleGrouped([{
+            label: "no groups",
+            children: rows
+          }]);
+        } else {
+          nestedRows = this.handleGrouped(rows);
+        }
+        // we need to preserve the original index of
+        // rows so lets do that
+        var index = 0;
+        nestedRows.forEach(function (headerRow) {
+          headerRow.children.forEach(function (row) {
+            row.originalIndex = index++;
 
+            // remove initial selected & set selected only based selectedRowIndex
+            _this7.$set(row, "vgtSelected", _this7.selectedRowIndex.includes(row.originalIndex));
+          });
+        });
+        return nestedRows;
+      },
+      handleSearch: function handleSearch() {
+        this.keepSelectedOnSearch === true ? this.changePage(1) : this.resetTable();
+
+        // for remote mode, we need to emit on-search
         if (this.mode === "remote") {
           this.$emit("on-search", {
             searchTerm: this.searchTerm
@@ -2845,7 +2700,6 @@
         this.initializeSort();
         this.changePage(1);
         this.$refs["table-header-primary"].reset(true);
-
         if (this.$refs["table-header-secondary"]) {
           this.$refs["table-header-secondary"].reset(true);
         }
@@ -2857,57 +2711,54 @@
         });
       },
       unselectAllInternal: function unselectAllInternal(forceAll) {
-        var _this7 = this;
-
+        var _this8 = this;
         var rows = this.selectAllByPage && !forceAll ? this.paginated : this.filteredRows;
         rows.forEach(function (headerRow, i) {
           headerRow.children.forEach(function (row, j) {
-            _this7.$set(row, "vgtSelected", false);
+            _this8.$set(row, "vgtSelected", false);
           });
         });
         this.selectedRowIndex = [];
         this.emitSelectedRows();
       },
       toggleSelectAll: function toggleSelectAll() {
-        var _this8 = this;
-
+        var _this9 = this;
         if (this.allSelected) {
           this.unselectAllInternal();
           return;
         }
-
         var rows = this.selectAllByPage ? this.paginated : this.filteredRows;
         rows.forEach(function (headerRow) {
           headerRow.children.forEach(function (row) {
-            _this8.$set(row, "vgtSelected", true);
+            _this9.$set(row, "vgtSelected", true);
+            // add or remove into selectedRowIndex
+            _this9.updateSelectedRowIndex(row);
           });
         });
         this.emitSelectedRows();
       },
       toggleSelectGroup: function toggleSelectGroup(event, headerRow) {
-        var _this9 = this;
-
+        var _this10 = this;
         headerRow.children.forEach(function (row) {
-          _this9.$set(row, "vgtSelected", event.checked);
+          _this10.$set(row, "vgtSelected", event.checked);
+          // add or remove into selectedRowIndex
+          _this10.updateSelectedRowIndex(row);
         });
       },
       changePage: function changePage(value) {
         var enabled = this.paginate;
         var _this$$refs = this.$refs,
-            paginationBottom = _this$$refs.paginationBottom,
-            paginationTop = _this$$refs.paginationTop;
-
+          paginationBottom = _this$$refs.paginationBottom,
+          paginationTop = _this$$refs.paginationTop;
         if (enabled) {
           if (this.paginateOnTop && paginationTop) {
             paginationTop.currentPage = value;
           }
-
           if (this.paginateOnBottom && paginationBottom) {
             paginationBottom.currentPage = value;
-          } // we also need to set the currentPage
+          }
+          // we also need to set the currentPage
           // for table.
-
-
           this.currentPage = value;
         }
       },
@@ -2920,75 +2771,73 @@
       },
       pageChanged: function pageChanged(pagination) {
         this.currentPage = pagination.currentPage;
-
         if (!pagination.noEmit) {
           var pageChangedEvent = this.pageChangedEvent();
           pageChangedEvent.prevPage = pagination.prevPage;
           this.$emit("on-page-change", pageChangedEvent);
-
           if (this.mode === "remote") {
             this.$emit("update:isLoading", true);
           }
         }
       },
       perPageChanged: function perPageChanged(pagination) {
-        this.currentPerPage = pagination.currentPerPage; // ensure that both sides of pagination are in agreement
+        this.currentPerPage = pagination.currentPerPage;
+        // ensure that both sides of pagination are in agreement
         // this fixes changes during position = 'both'
-
         var paginationPosition = this.paginationOptions.position;
-
         if (this.$refs.paginationTop && (paginationPosition === "top" || paginationPosition === "both")) {
           this.$refs.paginationTop.currentPerPage = this.currentPerPage;
         }
-
         if (this.$refs.paginationBottom && (paginationPosition === "bottom" || paginationPosition === "both")) {
           this.$refs.paginationBottom.currentPerPage = this.currentPerPage;
-        } //* update perPage also
-
-
+        }
+        //* update perPage also
         var perPageChangedEvent = this.pageChangedEvent();
         this.$emit("on-per-page-change", perPageChangedEvent);
-
         if (this.mode === "remote") {
           this.$emit("update:isLoading", true);
         }
       },
       changeSort: function changeSort(sorts) {
         this.sorts = sorts;
-        this.$emit("on-sort-change", sorts); // every time we change sort we need to reset to page 1
+        this.$emit("on-sort-change", sorts);
 
-        this.changePage(1); // if the mode is remote, we don't need to do anything
+        // every time we change sort we need to reset to page 1
+        this.changePage(1);
+
+        // if the mode is remote, we don't need to do anything
         // after this. just set table loading to true
-
         if (this.mode === "remote") {
           this.$emit("update:isLoading", true);
           return;
         }
-
         this.sortChanged = true;
+      },
+      // updated internal selected row index
+      updateSelectedRowIndex: function updateSelectedRowIndex(row) {
+        var originalIndex = row.originalIndex;
+
+        // add or remove into selectedRowIndex
+        if (!this.selectedRowIndex.includes(originalIndex) && (row === null || row === void 0 ? void 0 : row.vgtSelected) === true) this.selectedRowIndex.push(originalIndex);
+        if (this.selectedRowIndex.includes(originalIndex) && (row === null || row === void 0 ? void 0 : row.vgtSelected) !== true) this.selectedRowIndex = this.selectedRowIndex.filter(function (selectedIndex) {
+          return selectedIndex !== originalIndex;
+        });
       },
       // checkbox click should always do the following
       onCheckboxClicked: function onCheckboxClicked(row, index, event) {
         try {
-          var _this11 = this;
+          var _this12 = this;
+          // keep these orders
+          _this12.$set(row, "vgtSelected", !row.vgtSelected);
 
-          var originalIndex = row.originalIndex; // keep these orders
-
-          _this11.$set(row, "vgtSelected", !row.vgtSelected); // add or remove into selectedRowIndex
-
-
-          if (!_this11.selectedRowIndex.includes(originalIndex) && (row === null || row === void 0 ? void 0 : row.vgtSelected) === true) _this11.selectedRowIndex.push(originalIndex);
-          if (_this11.selectedRowIndex.includes(originalIndex) && (row === null || row === void 0 ? void 0 : row.vgtSelected) !== true) _this11.selectedRowIndex = _this11.selectedRowIndex.filter(function (selectedIndex) {
-            return selectedIndex !== originalIndex;
-          });
-
-          _this11.$emit("on-row-click", {
+          // add or remove into selectedRowIndex
+          _this12.updateSelectedRowIndex(row);
+          _this12.$emit("on-row-click", {
             row: row,
             pageIndex: index,
             selected: !!row.vgtSelected,
             event: event
           });
-
           return _await();
         } catch (e) {
           return Promise.reject(e);
@@ -3005,8 +2854,9 @@
       onRowClicked: function onRowClicked(row, index, event) {
         if (this.selectable && !this.selectOnCheckboxOnly) {
           this.$set(row, "vgtSelected", !row.vgtSelected);
+          // add or remove into selectedRowIndex
+          this.updateSelectedRowIndex(row);
         }
-
         this.$emit("on-row-click", {
           row: row,
           pageIndex: index,
@@ -3044,10 +2894,10 @@
       },
       searchTableOnEnter: function searchTableOnEnter() {
         if (this.searchTrigger === "enter") {
-          this.handleSearch(); // we reset the filteredRows here because
+          this.handleSearch();
+          // we reset the filteredRows here because
           // we want to search across everything.
-
-          this.filteredRows = JSON.parse(JSON.stringify(this.originalRows));
+          this.filteredRows = structuredClone(this.originalRows);
           this.forceSearch = true;
           this.sortChanged = true;
         }
@@ -3058,8 +2908,9 @@
         }
       },
       resetTable: function resetTable() {
-        if (!this.keepSelectedOnSearch) this.unselectAllInternal(true); // every time we searchTable
-
+        var unselectAll = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+        this.unselectAllInternal(unselectAll);
+        // every time we searchTable
         this.changePage(1);
       },
       // field can be:
@@ -3071,18 +2922,14 @@
         function dig(obj, selector) {
           var result = obj;
           var splitter = selector.split(".");
-
           for (var i = 0; i < splitter.length; i++) {
             if (typeof result === "undefined" || result === null) {
               return undefined;
             }
-
             result = result[splitter[i]];
           }
-
           return result;
         }
-
         if (typeof field === "function") return field(obj);
         if (typeof field === "string") return dig(obj, field);
         return undefined;
@@ -3090,154 +2937,140 @@
       collectFormatted: function collectFormatted(obj, column) {
         var headerRow = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
         var value;
-
         if (headerRow && column.headerField) {
           value = this.collect(obj, column.headerField);
         } else {
           value = this.collect(obj, column.field);
         }
+        if (value === undefined) return "";
 
-        if (value === undefined) return ""; // if user has supplied custom formatter,
+        // if user has supplied custom formatter,
         // use that here
-
         if (column.formatFn && typeof column.formatFn === "function") {
           return column.formatFn(value, obj);
-        } // lets format the resultant data
+        }
 
-
-        var type = column.typeDef; // this will only happen if we try to collect formatted
+        // lets format the resultant data
+        var type = column.typeDef;
+        // this will only happen if we try to collect formatted
         // before types have been initialized. for example: on
         // load when external query is specified.
-
         if (!type) {
           type = this.dataTypes[column.type] || defaultType;
         }
-
-        var result = type.format(value, column); // we must have some values in compact mode
-
+        var result = type.format(value, column);
+        // we must have some values in compact mode
         if (this.compactMode && (result == "" || result == null)) return "-";
         return result;
       },
       formattedRow: function formattedRow(row) {
         var isHeaderRow = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
         var formattedRow = {};
-
         for (var i = 0; i < this.typedColumns.length; i++) {
-          var col = this.typedColumns[i]; // what happens if field is
-
+          var col = this.typedColumns[i];
+          // what happens if field is
           if (col.field) {
             formattedRow[col.field] = this.collectFormatted(row, col, isHeaderRow);
           }
         }
-
         return formattedRow;
       },
       // Get classes for the given column index & element.
       getClasses: function getClasses(index, element, row) {
         var _this$typedColumns$in = this.typedColumns[index],
-            typeDef = _this$typedColumns$in.typeDef,
-            custom = _this$typedColumns$in["".concat(element, "Class")];
-
+          typeDef = _this$typedColumns$in.typeDef,
+          custom = _this$typedColumns$in["".concat(element, "Class")];
         var isRight = typeDef.isRight;
         if (this.rtl) isRight = true;
         var classes = {
           "vgt-right-align": isRight,
           "vgt-left-align": !isRight
-        }; // for td we need to check if value is
-        // a function.
+        };
 
+        // for td we need to check if value is
+        // a function.
         if (typeof custom === "function") {
           classes[custom(row)] = true;
         } else if (typeof custom === "string") {
           classes[custom] = true;
         }
-
         return classes;
       },
       // method to filter rows
       filterRows: function filterRows(columnFilters) {
-        var _this12 = this;
-
+        var _this13 = this;
         var fromFilter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
         // if (!this.rows.length) return;
         // this is invoked either as a result of changing filters
         // or as a result of modifying rows.
         this.columnFilters = columnFilters;
-        var computedRows = JSON.parse(JSON.stringify(this.originalRows));
-        var instancesOfFiltering = false; // do we have a filter to care about?
-        // if not we don't need to do anything
+        var computedRows = this.getOriginalRows( /* discardParentSelectedState */fromFilter);
+        var instancesOfFiltering = false;
 
+        // do we have a filter to care about?
+        // if not we don't need to do anything
         if (this.columnFilters && Object.keys(this.columnFilters).length) {
           var _ret = function () {
             // every time we filter rows, we need to set current page
             // to 1
             // if the mode is remote, we only need to reset, if this is
             // being called from filter, not when rows are changing
-            if (_this12.mode !== "remote" || fromFilter) {
-              _this12.changePage(1);
-            } // we need to emit an event and that's that.
+            if (_this13.mode !== "remote" || fromFilter) {
+              _this13.changePage(1);
+            }
+            // we need to emit an event and that's that.
             // but this only needs to be invoked if filter is changing
             // not when row object is modified.
-
-
             if (fromFilter) {
-              _this12.$emit("on-column-filter", {
-                columnFilters: _this12.columnFilters
+              _this13.$emit("on-column-filter", {
+                columnFilters: _this13.columnFilters
               });
-            } // if mode is remote, we don't do any filtering here.
+            }
 
-
-            if (_this12.mode === "remote") {
+            // if mode is remote, we don't do any filtering here.
+            if (_this13.mode === "remote") {
               if (fromFilter) {
-                _this12.$emit("update:isLoading", true);
+                _this13.$emit("update:isLoading", true);
               } else {
                 // if remote filtering has already been taken care of.
-                _this12.filteredRows = computedRows;
+                _this13.filteredRows = computedRows;
               }
-
               return {
                 v: void 0
               };
             }
-
             var fieldKey = function fieldKey(field) {
               if (typeof field === "function" && field.name) {
                 return field.name;
               }
-
               return field;
             };
-
             var _loop = function _loop(i) {
-              var col = _this12.typedColumns[i];
-
-              if (_this12.columnFilters[fieldKey(col.field)]) {
+              var col = _this13.typedColumns[i];
+              if (_this13.columnFilters[fieldKey(col.field)]) {
                 instancesOfFiltering = true;
                 computedRows.forEach(function (headerRow) {
                   var newChildren = headerRow.children.filter(function (row) {
                     // If column has a custom filter, use that.
                     if (col.filterOptions && typeof col.filterOptions.filterFn === "function") {
-                      return col.filterOptions.filterFn(_this12.collect(row, col.field), _this12.columnFilters[fieldKey(col.field)]);
-                    } // Otherwise Use default filters
+                      return col.filterOptions.filterFn(_this13.collect(row, col.field), _this13.columnFilters[fieldKey(col.field)]);
+                    }
 
-
+                    // Otherwise Use default filters
                     var typeDef = col.typeDef;
-                    return typeDef.filterPredicate(_this12.collect(row, col.field), _this12.columnFilters[fieldKey(col.field)], false, col.filterOptions && _typeof(col.filterOptions.filterDropdownItems) === "object");
-                  }); // should we remove the header?
-
+                    return typeDef.filterPredicate(_this13.collect(row, col.field), _this13.columnFilters[fieldKey(col.field)], false, col.filterOptions && _typeof(col.filterOptions.filterDropdownItems) === "object");
+                  });
+                  // should we remove the header?
                   headerRow.children = newChildren;
                 });
               }
             };
-
-            for (var i = 0; i < _this12.typedColumns.length; i++) {
+            for (var i = 0; i < _this13.typedColumns.length; i++) {
               _loop(i);
             }
           }();
-
           if (_typeof(_ret) === "object") return _ret.v;
         }
-
         if (instancesOfFiltering) {
           this.filteredRows = computedRows.filter(function (h) {
             return h.children && h.children.length;
@@ -3249,56 +3082,44 @@
       getCurrentIndex: function getCurrentIndex(rowId) {
         var index = 0;
         var found = false;
-
         for (var i = 0; i < this.paginated.length; i += 1) {
           var headerRow = this.paginated[i];
           var children = headerRow.children;
-
           if (children && children.length) {
             for (var j = 0; j < children.length; j += 1) {
               var c = children[j];
-
               if (c.originalIndex === rowId) {
                 found = true;
                 break;
               }
-
               index += 1;
             }
           }
-
           if (found) break;
         }
-
         return (this.currentPage - 1) * this.currentPerPage + index + 1;
       },
       getRowStyleClass: function getRowStyleClass(row) {
         var classes = "";
         if (this.hasRowClickListener) classes += "clickable";
         var rowStyleClasses;
-
         if (typeof this.rowStyleClass === "function") {
           rowStyleClasses = this.rowStyleClass(row);
         } else {
           rowStyleClasses = this.rowStyleClass;
         }
-
         if (rowStyleClasses) {
           classes += " ".concat(rowStyleClasses);
         }
-
         return classes;
       },
       handleGrouped: function handleGrouped(originalRows) {
-        var _this13 = this;
-
+        var _this14 = this;
         originalRows.forEach(function (headerRow, i) {
           headerRow.vgt_header_id = i;
-
-          if (_this13.groupOptions.maintainExpanded && _this13.expandedRowKeys.has(headerRow[_this13.groupOptions.rowKey])) {
-            _this13.$set(headerRow, "vgtIsExpanded", true);
+          if (_this14.groupOptions.maintainExpanded && _this14.expandedRowKeys.has(headerRow[_this14.groupOptions.rowKey])) {
+            _this14.$set(headerRow, "vgtIsExpanded", true);
           }
-
           headerRow.children.forEach(function (childRow) {
             childRow.vgt_id = i;
           });
@@ -3306,160 +3127,130 @@
         return originalRows;
       },
       initializePagination: function initializePagination() {
-        var _this14 = this;
-
+        var _this15 = this;
         var _this$paginationOptio = this.paginationOptions,
-            enabled = _this$paginationOptio.enabled,
-            perPage = _this$paginationOptio.perPage,
-            position = _this$paginationOptio.position,
-            perPageDropdown = _this$paginationOptio.perPageDropdown,
-            perPageDropdownEnabled = _this$paginationOptio.perPageDropdownEnabled,
-            dropdownAllowAll = _this$paginationOptio.dropdownAllowAll,
-            firstLabel = _this$paginationOptio.firstLabel,
-            lastLabel = _this$paginationOptio.lastLabel,
-            nextLabel = _this$paginationOptio.nextLabel,
-            prevLabel = _this$paginationOptio.prevLabel,
-            rowsPerPageLabel = _this$paginationOptio.rowsPerPageLabel,
-            ofLabel = _this$paginationOptio.ofLabel,
-            pageLabel = _this$paginationOptio.pageLabel,
-            allLabel = _this$paginationOptio.allLabel,
-            setCurrentPage = _this$paginationOptio.setCurrentPage,
-            mode = _this$paginationOptio.mode,
-            infoFn = _this$paginationOptio.infoFn;
-
+          enabled = _this$paginationOptio.enabled,
+          perPage = _this$paginationOptio.perPage,
+          position = _this$paginationOptio.position,
+          perPageDropdown = _this$paginationOptio.perPageDropdown,
+          perPageDropdownEnabled = _this$paginationOptio.perPageDropdownEnabled,
+          dropdownAllowAll = _this$paginationOptio.dropdownAllowAll,
+          firstLabel = _this$paginationOptio.firstLabel,
+          lastLabel = _this$paginationOptio.lastLabel,
+          nextLabel = _this$paginationOptio.nextLabel,
+          prevLabel = _this$paginationOptio.prevLabel,
+          rowsPerPageLabel = _this$paginationOptio.rowsPerPageLabel,
+          ofLabel = _this$paginationOptio.ofLabel,
+          pageLabel = _this$paginationOptio.pageLabel,
+          allLabel = _this$paginationOptio.allLabel,
+          setCurrentPage = _this$paginationOptio.setCurrentPage,
+          mode = _this$paginationOptio.mode,
+          infoFn = _this$paginationOptio.infoFn;
         if (typeof enabled === "boolean") {
           this.paginate = enabled;
         }
-
         if (typeof perPage === "number") {
           this.perPage = perPage;
         }
-
         if (position === "top") {
           this.paginateOnTop = true; // default is false
-
           this.paginateOnBottom = false; // default is true
         } else if (position === "both") {
           this.paginateOnTop = true;
           this.paginateOnBottom = true;
         }
-
         if (Array.isArray(perPageDropdown) && perPageDropdown.length) {
           this.customRowsPerPageDropdown = perPageDropdown;
-
           if (!this.perPage) {
             var _perPageDropdown = _slicedToArray(perPageDropdown, 1);
-
             this.perPage = _perPageDropdown[0];
           }
         }
-
         if (typeof perPageDropdownEnabled === "boolean") {
           this.perPageDropdownEnabled = perPageDropdownEnabled;
         }
-
         if (typeof dropdownAllowAll === "boolean") {
           this.paginateDropdownAllowAll = dropdownAllowAll;
         }
-
         if (typeof mode === "string") {
           this.paginationMode = mode;
         }
-
         if (typeof firstLabel === "string") {
           this.firstText = firstLabel;
         }
-
         if (typeof lastLabel === "string") {
           this.lastText = lastLabel;
         }
-
         if (typeof nextLabel === "string") {
           this.nextText = nextLabel;
         }
-
         if (typeof prevLabel === "string") {
           this.prevText = prevLabel;
         }
-
         if (typeof rowsPerPageLabel === "string") {
           this.rowsPerPageText = rowsPerPageLabel;
         }
-
         if (typeof ofLabel === "string") {
           this.ofText = ofLabel;
         }
-
         if (typeof pageLabel === "string") {
           this.pageText = pageLabel;
         }
-
         if (typeof allLabel === "string") {
           this.allText = allLabel;
         }
-
         if (typeof setCurrentPage === "number") {
           setTimeout(function () {
-            _this14.changePage(setCurrentPage);
+            _this15.changePage(setCurrentPage);
           }, 500);
         }
-
         if (typeof infoFn === "function") {
           this.paginationInfoFn = infoFn;
         }
       },
       initializeSearch: function initializeSearch() {
         var _this$searchOptions = this.searchOptions,
-            enabled = _this$searchOptions.enabled,
-            trigger = _this$searchOptions.trigger,
-            externalQuery = _this$searchOptions.externalQuery,
-            searchFn = _this$searchOptions.searchFn,
-            placeholder = _this$searchOptions.placeholder,
-            skipDiacritics = _this$searchOptions.skipDiacritics;
-
+          enabled = _this$searchOptions.enabled,
+          trigger = _this$searchOptions.trigger,
+          externalQuery = _this$searchOptions.externalQuery,
+          searchFn = _this$searchOptions.searchFn,
+          placeholder = _this$searchOptions.placeholder,
+          skipDiacritics = _this$searchOptions.skipDiacritics;
         if (typeof enabled === "boolean") {
           this.searchEnabled = enabled;
         }
-
         if (trigger === "enter") {
           this.searchTrigger = trigger;
         }
-
         if (typeof externalQuery === "string") {
           this.externalSearchQuery = externalQuery;
         }
-
         if (typeof searchFn === "function") {
           this.searchFn = searchFn;
         }
-
         if (typeof placeholder === "string") {
           this.searchPlaceholder = placeholder;
         }
-
         if (typeof skipDiacritics === "boolean") {
           this.searchSkipDiacritics = skipDiacritics;
         }
       },
       initializeSort: function initializeSort() {
         var _this$sortOptions = this.sortOptions,
-            enabled = _this$sortOptions.enabled,
-            initialSortBy = _this$sortOptions.initialSortBy,
-            multipleColumns = _this$sortOptions.multipleColumns;
-        var initSortBy = JSON.parse(JSON.stringify(initialSortBy || {}));
-
+          enabled = _this$sortOptions.enabled,
+          initialSortBy = _this$sortOptions.initialSortBy,
+          multipleColumns = _this$sortOptions.multipleColumns;
+        var initSortBy = structuredClone(initialSortBy || {});
         if (typeof enabled === "boolean") {
           this.sortable = enabled;
         }
-
         if (typeof multipleColumns === "boolean") {
           this.multipleColumnSort = multipleColumns;
-        } //* initialSortBy can be an array or an object
+        }
 
-
+        //* initialSortBy can be an array or an object
         if (_typeof(initSortBy) === "object") {
           var ref = this.fixedHeader ? this.$refs["table-header-secondary"] : this.$refs["table-header-primary"];
-
           if (Array.isArray(initSortBy)) {
             ref.setInitialSort(initSortBy);
           } else {
@@ -3470,43 +3261,35 @@
       },
       initializeSelect: function initializeSelect() {
         var _this$selectOptions = this.selectOptions,
-            enabled = _this$selectOptions.enabled,
-            selectionInfoClass = _this$selectOptions.selectionInfoClass,
-            selectionText = _this$selectOptions.selectionText,
-            clearSelectionText = _this$selectOptions.clearSelectionText,
-            selectOnCheckboxOnly = _this$selectOptions.selectOnCheckboxOnly,
-            selectAllByPage = _this$selectOptions.selectAllByPage,
-            disableSelectInfo = _this$selectOptions.disableSelectInfo,
-            selectAllByGroup = _this$selectOptions.selectAllByGroup;
-
+          enabled = _this$selectOptions.enabled,
+          selectionInfoClass = _this$selectOptions.selectionInfoClass,
+          selectionText = _this$selectOptions.selectionText,
+          clearSelectionText = _this$selectOptions.clearSelectionText,
+          selectOnCheckboxOnly = _this$selectOptions.selectOnCheckboxOnly,
+          selectAllByPage = _this$selectOptions.selectAllByPage,
+          disableSelectInfo = _this$selectOptions.disableSelectInfo,
+          selectAllByGroup = _this$selectOptions.selectAllByGroup;
         if (typeof enabled === "boolean") {
           this.selectable = enabled;
         }
-
         if (typeof selectOnCheckboxOnly === "boolean") {
           this.selectOnCheckboxOnly = selectOnCheckboxOnly;
         }
-
         if (typeof selectAllByPage === "boolean") {
           this.selectAllByPage = selectAllByPage;
         }
-
         if (typeof selectAllByGroup === "boolean") {
           this.selectAllByGroup = selectAllByGroup;
         }
-
         if (typeof disableSelectInfo === "boolean") {
           this.disableSelectInfo = disableSelectInfo;
         }
-
         if (typeof selectionInfoClass === "string") {
           this.selectionInfoClass = selectionInfoClass;
         }
-
         if (typeof selectionText === "string") {
           this.selectionText = selectionText;
         }
-
         if (typeof clearSelectionText === "string") {
           this.clearSelectionText = clearSelectionText;
         }
@@ -3516,7 +3299,6 @@
       if (this.perPage) {
         this.currentPerPage = this.perPage;
       }
-
       this.initializeSort();
     },
     components: {
@@ -3530,14 +3312,10 @@
   /* script */
   var __vue_script__ = script;
   /* template */
-
   var __vue_render__ = function __vue_render__() {
     var _vm = this;
-
     var _h = _vm.$createElement;
-
     var _c = _vm._self._c || _h;
-
     return _c('div', {
       "class": _vm.wrapStyleClasses
     }, [_vm.isLoading ? _c('div', {
@@ -3899,19 +3677,15 @@
       "total": _vm.totalRows || _vm.totalRowCount
     }) : _vm._e()], 2)]);
   };
-
   var __vue_staticRenderFns__ = [];
-  /* style */
 
+  /* style */
   var __vue_inject_styles__ = undefined;
   /* scoped */
-
   var __vue_scope_id__ = undefined;
   /* module identifier */
-
   var __vue_module_identifier__ = undefined;
   /* functional template */
-
   var __vue_is_functional_template__ = false;
   /* style inject */
 
@@ -3928,8 +3702,9 @@
     install: function install(Vue, options) {
       Vue.component(__vue_component__.name, __vue_component__);
     }
-  }; // Automatic installation if Vue has been added to the global scope.
+  };
 
+  // Automatic installation if Vue has been added to the global scope.
   if (typeof window !== 'undefined' && window.Vue) {
     window.Vue.use(VueGoodTablePlugin);
   }
