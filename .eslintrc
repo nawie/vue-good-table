@@ -4,6 +4,9 @@
     "plugin:vue/base"
   ],
   "rules": {
+    "indent": ["error", 2],
+    "curly": ["error", "multi-or-nest"],
+    "semi": ["error", "always"],
     "func-names": ["error", "never"],
     "no-shadow": "off",
     "no-unused-vars": "off",
