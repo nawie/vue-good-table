@@ -354,7 +354,7 @@ export default {
     // update selected data based on search and columns filter
     // when set to true it will keep selected value based on available data (will trigger on-selected-rows-change)
     // else will keep selected value even when available data is changed (will not trigger on-selected-rows-change)
-    updatedSelectedOnSearch: { default: true, type: Boolean },
+    updatedSelectedOnSearch: { default: false, type: Boolean },
 
     groupOptions: {
       default() {
